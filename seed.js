@@ -45,14 +45,52 @@ const createToy = async (toy) => {
     console.log(`${createdToy.name} was created`)
 };
 
+const createTrick = async (trick) => {
+    const { name } = trick;
+    const data = await client.query(`
+        INSERT INTO tricks (
+            name
+        ) VALUES (
+            $1
+        )
+        RETURNING *;
+    `, [name]);
+
+    const createdTrick = data.rows[0];
+    console.log(`${createdTrick.name} was created`)
+}
+
+const createPuppyTrick = async (puppyTrick) => {
+    const { puppyId, trickId } = puppyTrick;
+
+    const data = await client.query(`
+        INSERT INTO puppies_tricks (
+            "puppyId",
+            "trickId"
+        ) VALUES (
+            $1, $2
+        )
+        RETURNING *;
+    `, [puppyId, trickId]);
+
+    const createdPuppyTrick = data.rows[0];
+    console.log("================")
+    console.log(createdPuppyTrick)
+    console.log("================")
+
+    console.log(`${createdPuppyTrick.puppyId} connected to ${createdPuppyTrick.trickId}`)
+}
+
 client.connect();
 
 const rebuildDb = async () => {
     // Clear out all our existing databases
     console.log("Dropping all tables...");
     await client.query(`
+        DROP TABLE IF EXISTS puppies_tricks;
         DROP TABLE IF EXISTS puppies;
         DROP TABLE IF EXISTS toys;
+        DROP TABLE IF EXISTS tricks;
     `);
 
     // Create new versions of those databases
@@ -72,6 +110,16 @@ const rebuildDb = async () => {
         age INT,
         "favoriteToy" INTEGER REFERENCES toys(id)
       );
+
+      CREATE TABLE tricks (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL
+      );
+
+      CREATE TABLE puppies_tricks (
+        "puppyId" INTEGER REFERENCES puppies(id),
+        "trickId" INTEGER REFERENCES tricks(id)
+      );
     `)
 
     // Fill those databases with new information 
@@ -86,7 +134,12 @@ const rebuildDb = async () => {
         // id: 2
         name: "rope",
         color: "red"
-    })
+    });
+
+    await createTrick({ name: 'fetch' });
+    await createTrick({ name: 'shake' });
+    await createTrick({ name: 'sit' });
+    await createTrick({ name: 'rollover' });
 
     await createPuppy({
         name: "larry",
@@ -109,12 +162,37 @@ const rebuildDb = async () => {
         favoriteToy: 1
     });
 
-    // Query those databases and console.log() the result
-    const puppies = await client.query('SELECT * FROM puppies;');
-    console.log(puppies.rows)
+    await createPuppyTrick({ puppyId: 1, trickId: 1 })
+    await createPuppyTrick({ puppyId: 2, trickId: 1 })
+    await createPuppyTrick({ puppyId: 3, trickId: 1 })
 
-    const toys = await client.query('SELECT * FROM toys;');
-    console.log(toys.rows)
+    await createPuppyTrick({ puppyId: 2, trickId: 2 })
+    await createPuppyTrick({ puppyId: 3, trickId: 2 })
+
+    await createPuppyTrick({ puppyId: 3, trickId: 3 })
+
+    // Query those databases and console.log() the result
+    const data = await client.query('SELECT * FROM puppies;');
+    const puppies = data.rows;
+
+    for (var i = 0; i < puppies.length; i++) {
+        const currPuppy = puppies[i];
+
+        const data = await client.query(`
+            SELECT tricks.name FROM puppies_tricks
+            JOIN tricks ON puppies_tricks."trickId" = tricks.id  
+            WHERE puppies_tricks."puppyId" = $1;
+        `, [currPuppy.id]);
+
+        data.rows = data.rows.map(trickObj => trickObj.name)
+
+        currPuppy.tricks = data.rows;
+    }
+
+    console.log(puppies)
+
+    // const toys = await client.query('SELECT * FROM toys;');
+    // console.log(toys.rows)
 
     console.log("Done running!")
 }

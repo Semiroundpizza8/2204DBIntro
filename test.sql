@@ -64,6 +64,10 @@ SELECT
     FROM puppies
 JOIN toys ON puppies."favoriteToy" = toys.id;
 
+SELECT tricks.name FROM puppies_tricks
+  JOIN tricks ON puppies_tricks."trickId" = tricks.id  
+  WHERE puppies_tricks."puppyId" = 1;
+
 -- Clearing out / destroying your tables
 DROP TABLE IF EXISTS puppies;
 DROP TABLE IF EXISTS toys;
