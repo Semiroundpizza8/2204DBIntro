@@ -118,9 +118,15 @@ const rebuildDb = async () => {
 
       CREATE TABLE puppies_tricks (
         "puppyId" INTEGER REFERENCES puppies(id),
-        "trickId" INTEGER REFERENCES tricks(id)
+        "trickId" INTEGER REFERENCES tricks(id),
+        proficiency INTEGER,
+        "timeLearned" DATE,
+        command VARCHAR(255),
+        UNIQUE(command, "puppyId")
       );
     `)
+    // Puppy 1, Trick 1, "Sit"
+    // Puppy 1, Trick 2, "Sit Down"
 
     // Fill those databases with new information 
     await createToy({
