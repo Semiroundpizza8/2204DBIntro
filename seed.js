@@ -1,87 +1,27 @@
-const { Client } = require("pg");
-const client = new Client("postgres://localhost:5444/puppystore");
 // const client = new Client("postgres://localhost:5432/puppyStore");
-
-console.log("Hello!");
-
-/**
- * Function that takes in a puppy and adds that puppy to our database
- */
-
-const createPuppy = async (puppy) => {
-    const { name, age, email, favoriteToy } = puppy;
-
-    const data = await client.query(`
-        INSERT INTO puppies (
-            name,
-            email,
-            age,
-            "favoriteToy"
-        ) VALUES (
-           $1, $2, $3, $4
-        )
-        RETURNING *;
-    `, [name, email, age, favoriteToy]);
-
-    const createdPuppy = data.rows[0];
-    console.log(`${createdPuppy.name} was created`)
-};
-
-const createToy = async (toy) => {
-    const { name, color } = toy;
-
-    const data = await client.query(`
-        INSERT INTO toys (
-            name,
-            color
-        ) VALUES (
-            $1,
-            $2
-        )
-        RETURNING *;
-    `, [name, color]);
-
-    const createdToy = data.rows[0];
-    console.log(`${createdToy.name} was created`)
-};
-
-const createTrick = async (trick) => {
-    const { name } = trick;
-    const data = await client.query(`
-        INSERT INTO tricks (
-            name
-        ) VALUES (
-            $1
-        )
-        RETURNING *;
-    `, [name]);
-
-    const createdTrick = data.rows[0];
-    console.log(`${createdTrick.name} was created`)
-}
-
-const createPuppyTrick = async (puppyTrick) => {
-    const { puppyId, trickId } = puppyTrick;
-
-    const data = await client.query(`
-        INSERT INTO puppies_tricks (
-            "puppyId",
-            "trickId"
-        ) VALUES (
-            $1, $2
-        )
-        RETURNING *;
-    `, [puppyId, trickId]);
-
-    const createdPuppyTrick = data.rows[0];
-    console.log("================")
-    console.log(createdPuppyTrick)
-    console.log("================")
-
-    console.log(`${createdPuppyTrick.puppyId} connected to ${createdPuppyTrick.trickId}`)
-}
-
-client.connect();
+// const client = require('./db/client')
+// const {
+//     getAllPuppies,
+//     createPuppy
+// } = require('./db/puppies');
+// const {
+//     createToy
+// } = require('./db/toys');
+// const {
+//     createTrick
+// } = require('./db/tricks');
+// const {
+//     createPuppyTrick
+// } = require('./db/puppies_tricks');
+const db = require('./db')
+const {
+    client,
+    getAllPuppies,
+    createPuppy,
+    createPuppyTrick,
+    createToy,
+    createTrick
+} = db;
 
 const rebuildDb = async () => {
     // Clear out all our existing databases
@@ -130,14 +70,11 @@ const rebuildDb = async () => {
 
     // Fill those databases with new information 
     await createToy({
-        // id: 1
-        // id: asdfsgjknjk-2353jnjkdfg-345lmkl456
         name: "ball",
         color: "green"
     })
 
     await createToy({
-        // id: 2
         name: "rope",
         color: "red"
     });
@@ -178,27 +115,8 @@ const rebuildDb = async () => {
     await createPuppyTrick({ puppyId: 3, trickId: 3 })
 
     // Query those databases and console.log() the result
-    const data = await client.query('SELECT * FROM puppies;');
-    const puppies = data.rows;
-
-    for (var i = 0; i < puppies.length; i++) {
-        const currPuppy = puppies[i];
-
-        const data = await client.query(`
-            SELECT tricks.name FROM puppies_tricks
-            JOIN tricks ON puppies_tricks."trickId" = tricks.id  
-            WHERE puppies_tricks."puppyId" = $1;
-        `, [currPuppy.id]);
-
-        data.rows = data.rows.map(trickObj => trickObj.name)
-
-        currPuppy.tricks = data.rows;
-    }
-
-    console.log(puppies)
-
-    // const toys = await client.query('SELECT * FROM toys;');
-    // console.log(toys.rows)
+    const puppies = await getAllPuppies();
+    console.log(puppies);
 
     console.log("Done running!")
 }
@@ -206,22 +124,3 @@ const rebuildDb = async () => {
 rebuildDb()
     .catch(console.error)
     .finally(() => client.end());
-
-
-// Example express route using db methods
-// app.get('/puppies', async (req, res, next) => {
-
-//     // Grabbing the info / doing the operation to your DB
-//     const puppies = await client.query('SELECT * FROM PUPPIES');
-    
-//     // Passing that info back to the user
-//     res.send(puppies);
-// })
-
-// app.post('/puppies', async (req, res, next) => {
-//     const { puppy } = req.body
-    
-//     await createPuppy(puppy);
-
-//     res.sendStatus(204);
-// })
