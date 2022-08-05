@@ -21,20 +21,26 @@ const getAllPuppies = async () => {
     return puppies
 }
 
+const getPuppyByName = async (name) => {
+    const puppies = await getAllPuppies();
+    return puppies.find(puppy => puppy.name === name);
+}
+
 const createPuppy = async (puppy) => {
-    const { name, age, email, favoriteToy } = puppy;
+    const { name, age, email, password, favoriteToy } = puppy;
 
     const data = await client.query(`
         INSERT INTO puppies (
             name,
             email,
             age,
+            password,
             "favoriteToy"
         ) VALUES (
-           $1, $2, $3, $4
+           $1, $2, $3, $4, $5
         )
         RETURNING *;
-    `, [name, email, age, favoriteToy]);
+    `, [name, email, age, password, favoriteToy]);
 
     const createdPuppy = data.rows[0];
     console.log(`${createdPuppy.name} was created`)
@@ -42,5 +48,6 @@ const createPuppy = async (puppy) => {
 
 module.exports = {
     getAllPuppies,
+    getPuppyByName,
     createPuppy
 }

@@ -46,6 +46,7 @@ const rebuildDb = async () => {
         id SERIAL PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
         email VARCHAR(255) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
         "isCute" BOOLEAN DEFAULT true,
         age INT,
         "favoriteToy" INTEGER REFERENCES toys(id)
@@ -87,6 +88,7 @@ const rebuildDb = async () => {
     await createPuppy({
         name: "larry",
         email: 'larry@gmail.com',
+        password: "password1",
         age: 10,
         favoriteToy: 1
     });
@@ -94,6 +96,7 @@ const rebuildDb = async () => {
     await createPuppy({
         name: "izzy",
         email: 'izzy@gmail.com',
+        password: "password2",
         age: 3,
         favoriteToy: 2
     });
@@ -101,6 +104,7 @@ const rebuildDb = async () => {
     await createPuppy({
         name: "mae",
         email: 'mae@gmail.com',
+        password: "password3",
         age: 5,
         favoriteToy: 1
     });
