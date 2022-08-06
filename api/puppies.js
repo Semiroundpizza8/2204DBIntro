@@ -3,14 +3,20 @@ const jwt = require('jsonwebtoken');
 
 const { SECRET } = process.env;
 
-
-const { getAllPuppies, getPuppyByName } = require('../db');
+const { requireUser } = require('./utils');
+const { getAllPuppies, getPuppyByName, deletePuppy } = require('../db');
 
 router.get('/', async (req, res, next) => {
     console.log("IN GETALLPUPPIES: ", req.puppy)
 
     const puppies = await getAllPuppies();
     res.send(puppies);
+});
+
+// DELETE localhost:3000/api/puppies/1
+router.delete('/:id', requireUser, async (req, res, next) => {
+    const didDelete = await deletePuppy(req.params.id);
+    res.send(`Puppy ${req.params.id} deleted!`);
 });
 
 router.post('/login', async (req, res, next) => {

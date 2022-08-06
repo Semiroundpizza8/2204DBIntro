@@ -4,6 +4,10 @@ const { SECRET } = process.env;
 
 router.use(async (req, res, next) => {
     const auth = req.header("Authorization");
+
+    // Add early out for non-logged-in users
+    if (!auth) return next();
+
     const token = auth.slice(7);
 
     const puppyObj = jwt.verify(token, SECRET);

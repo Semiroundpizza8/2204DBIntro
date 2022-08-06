@@ -1,4 +1,5 @@
 const client = require('./client');
+const { deletePuppyTricksById } = require('./puppies_tricks');
 
 const getAllPuppies = async () => {
     const data = await client.query('SELECT * FROM puppies;');
@@ -26,6 +27,21 @@ const getPuppyByName = async (name) => {
     return puppies.find(puppy => puppy.name === name);
 }
 
+const deletePuppy = async (puppyId) => {
+    // const puppyTricksDeleted = await deletePuppyTricksById(puppyId);
+    // await client.query(`
+    //     DELETE FROM puppies 
+    //     WHERE id=$1;
+    // `, [puppyId]);
+    await client.query(`
+        UPDATE puppies
+        SET "isDeleted" = true
+        WHERE id=$1;
+    `, [puppyId]);
+
+    return true;
+}
+
 const createPuppy = async (puppy) => {
     const { name, age, email, password, favoriteToy } = puppy;
 
@@ -49,5 +65,6 @@ const createPuppy = async (puppy) => {
 module.exports = {
     getAllPuppies,
     getPuppyByName,
-    createPuppy
+    createPuppy,
+    deletePuppy
 }

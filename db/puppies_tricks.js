@@ -17,6 +17,16 @@ const createPuppyTrick = async (puppyTrick) => {
     console.log(`${createdPuppyTrick.puppyId} connected to ${createdPuppyTrick.trickId}`)
 }
 
+const deletePuppyTricksById = async (puppyId) => {
+    await client.query(`
+        DELETE FROM puppies_tricks
+        WHERE "puppyId" = $1;
+    `, [puppyId]);
+
+    return true;
+}
+
 module.exports = {
-    createPuppyTrick
+    createPuppyTrick,
+    deletePuppyTricksById
 }

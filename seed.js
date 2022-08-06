@@ -49,7 +49,8 @@ const rebuildDb = async () => {
         password VARCHAR(255) NOT NULL,
         "isCute" BOOLEAN DEFAULT true,
         age INT,
-        "favoriteToy" INTEGER REFERENCES toys(id)
+        "favoriteToy" INTEGER REFERENCES toys(id),
+        "isDeleted" BOOLEAN DEFAULT false
       );
 
       CREATE TABLE tricks (
